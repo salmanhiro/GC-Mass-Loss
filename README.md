@@ -1,4 +1,4 @@
-# Globular Cluster Mass Loss from Restricted N-body Simulation and Observation
+# Globular Cluster Tidal Disruption
 
 This repository compares observed GC tidal stream with full and restricted N-body simulation to simulate the tidal disruption of GCs.
 
