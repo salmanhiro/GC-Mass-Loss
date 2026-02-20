@@ -10,7 +10,7 @@ retrieve data for a specific cluster using the GCParams helper, including
 fuzzy name matching.
 """
 
-from streamcutter.gc import GCParams
+from streamcutter.dynamics import GCParams
 
 
 def main():

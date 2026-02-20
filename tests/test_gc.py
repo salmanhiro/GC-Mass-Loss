@@ -1,4 +1,4 @@
-"""Tests for the streamcutter.gc module."""
+"""Tests for the streamcutter.dynamics module."""
 
 import sys
 import types
@@ -7,14 +7,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# Stub out agama before importing gc, since agama is not installed in CI
+# Stub out agama before importing dynamics, since agama is not installed in CI
 # ---------------------------------------------------------------------------
 _agama_stub = types.ModuleType("agama")
 _agama_stub.setUnits = MagicMock()
 _agama_stub.GalaPotential = MagicMock()
 sys.modules["agama"] = _agama_stub
 
-from streamcutter.gc import GCParams, PotentialFactory  # noqa: E402
+from streamcutter.dynamics import GCParams, PotentialFactory  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ def _make_table(tmp_path, clusters):
 
 class TestGCParams:
     def test_default_table_path(self):
-        from streamcutter.gc import _DEFAULT_TABLE
+        from streamcutter.dynamics import _DEFAULT_TABLE
         gcp = GCParams()
         assert gcp.table_path == _DEFAULT_TABLE
         assert gcp.table_path.endswith("mw_gc_parameters_orbital_structural_time.ecsv")
