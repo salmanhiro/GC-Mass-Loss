@@ -1,7 +1,7 @@
 """Example: use GCParams to query the MW globular cluster table.
 
 Usage
------
+--
     pip install -e .
     python scripts/gc_example.py
 
@@ -20,7 +20,7 @@ def main():
     print(f"Catalogue contains {len(names)} clusters.")
     print(f"First five: {names[:5]}")
 
-    # --- exact lookup by catalogue name ---
+    #  exact lookup by catalogue name 
     cluster = names[0]
     row = gcp.get_row(cluster)
     print(f"\nParameters for {cluster}:")
@@ -28,7 +28,7 @@ def main():
         if col in row.colnames:
             print(f"  {col:12s} = {row[col][0]}")
 
-    # --- fuzzy lookup: "NGC 4590" resolves to "NGC_4590" in the catalogue ---
+    #  fuzzy lookup: "NGC 4590" resolves to "NGC_4590" in the catalogue 
     query = "NGC 4590"
     matches = gcp.find_cluster(query)
     if matches:
