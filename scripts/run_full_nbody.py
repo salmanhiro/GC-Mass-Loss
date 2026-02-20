@@ -13,7 +13,6 @@ from streamcutter.host import build_host
 
 POT_INI = "../configs/MWPotential2014.ini"
 
-
 def main():
     print("Building host potential from:", POT_INI)
     pot_host, sigma = build_host(POT_INI)
