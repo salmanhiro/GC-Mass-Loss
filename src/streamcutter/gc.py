@@ -7,13 +7,18 @@ from pathlib import Path
 from astropy.table import QTable
 import agama
 
+# Resolve the bundled data table relative to this file so the default path
+# works regardless of the current working directory.
+_DEFAULT_TABLE = str(
+    Path(__file__).parents[2] / "data" / "mw_gc_parameters_orbital_structural_time.ecsv"
+)
 
 # GC parameters & potentials
 
 @dataclass
 class GCParams:
     """Helper to load the GC parameter table and select a cluster row."""
-    table_path: str = "data/mw_gc_parameters_orbital_structural_time.ecsv"
+    table_path: str = _DEFAULT_TABLE
 
     def get_row(self, cluster_name: str) -> QTable:
         tab = QTable.read(self.table_path)

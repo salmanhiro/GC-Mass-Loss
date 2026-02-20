@@ -36,8 +36,10 @@ def _make_table(tmp_path, clusters):
 
 class TestGCParams:
     def test_default_table_path(self):
+        from streamcutter.gc import _DEFAULT_TABLE
         gcp = GCParams()
-        assert gcp.table_path == "data/mw_gc_parameters_orbital_structural_time.ecsv"
+        assert gcp.table_path == _DEFAULT_TABLE
+        assert gcp.table_path.endswith("mw_gc_parameters_orbital_structural_time.ecsv")
 
     def test_custom_table_path(self):
         gcp = GCParams(table_path="some/other/path.ecsv")
