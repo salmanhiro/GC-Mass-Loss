@@ -10,20 +10,23 @@ This script:
   2. Builds the MWPotential2014 host potential.
   3. Uses create_mock_stream_fardal15 (Fardal+15 particle-spray method) to simulate
      3 orbits of tidal disruption.
-  4. Prints the resulting 6-D phase-space coordinates of the stream
-     particles.
+  4. Prints and plots the resulting 6-D phase-space coordinates of the stream
+     particles in both Galactocentric and ICRS (heliocentric) frames.
 """
 
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")   # non-interactive backend for script use
+import matplotlib.pyplot as plt
 import numpy as np
 import agama
 
+from streamcutter.coordinate import get_observed_coords
 from streamcutter.dynamics import GCParams
 from streamcutter.stream_generator import (
     create_mock_stream_fardal15,
     create_initial_condition_fardal15,
-    get_observed_coords,
 )
 
 # Agama unit system: 1 kpc, 1 km/s, 1 Msun
@@ -117,7 +120,7 @@ def main():
         print(" ".join(f"{v:>10.4f}" for v in ps))
 
     # ------------------------------------------------------------------
-    # 6. Convert to observed (heliocentric) coordinates
+    # 6. Convert to observed (heliocentric / ICRS) coordinates
     # ------------------------------------------------------------------
     ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv_stream)
     print("\nObserved coords of first 5 stream particles:")
@@ -128,6 +131,50 @@ def main():
             f"{ra[i]:>10.4f} {dec[i]:>10.4f} {dist[i]:>11.4f} "
             f"{vlos[i]:>12.4f} {pmra[i]:>14.4f} {pmde[i]:>15.4f}"
         )
+
+    # ------------------------------------------------------------------
+    # 7. Plot: Galactocentric (x-y and x-z) + ICRS (RA-Dec)
+    # ------------------------------------------------------------------
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig.suptitle(f"Pal 5 tidal stream — {n_orbits} orbits, {num_particles} particles",
+                 fontsize=13)
+
+    # --- Galactocentric x-y ---
+    ax = axes[0]
+    ax.scatter(xv_stream[:, 0], xv_stream[:, 1],
+               s=1, alpha=0.4, color="steelblue", label="stream")
+    ax.scatter(posvel_sat[0], posvel_sat[1],
+               s=60, color="red", zorder=5, label="Pal 5")
+    ax.set_xlabel("x [kpc]")
+    ax.set_ylabel("y [kpc]")
+    ax.set_title("Galactocentric x–y")
+    ax.legend(markerscale=4, fontsize=8)
+    ax.set_aspect("equal")
+
+    # --- Galactocentric x-z ---
+    ax = axes[1]
+    ax.scatter(xv_stream[:, 0], xv_stream[:, 2],
+               s=1, alpha=0.4, color="steelblue")
+    ax.scatter(posvel_sat[0], posvel_sat[2],
+               s=60, color="red", zorder=5)
+    ax.set_xlabel("x [kpc]")
+    ax.set_ylabel("z [kpc]")
+    ax.set_title("Galactocentric x–z")
+    ax.set_aspect("equal")
+
+    # --- ICRS RA-Dec ---
+    ax = axes[2]
+    ax.scatter(ra, dec, s=1, alpha=0.4, color="darkorange")
+    ax.set_xlabel("RA [deg]")
+    ax.set_ylabel("Dec [deg]")
+    ax.set_title("ICRS (RA–Dec)")
+    ax.invert_xaxis()   # astronomical convention: RA increases to the left
+
+    fig.tight_layout()
+    out_path = Path(__file__).parents[1] / "results" / "pal5_stream.png"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=150)
+    print(f"\nPlot saved to: {out_path}")
 
 
 if __name__ == "__main__":

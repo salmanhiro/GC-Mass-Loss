@@ -273,7 +273,7 @@ class TestCreateStream:
 # ---------------------------------------------------------------------------
 
 # These functions depend only on astropy (installed in CI); no mocking needed.
-from streamcutter.stream_generator import (  # noqa: E402
+from streamcutter.coordinate import (  # noqa: E402
     get_observed_coords,
     get_galactocentric_coords,
 )
