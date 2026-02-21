@@ -1,4 +1,4 @@
-"""Simulate tidal disruption of Pal 5 using create_stream.
+"""Simulate tidal disruption of Pal 5 using create_mock_stream_fardal15.
 
 Usage
 -----
@@ -8,7 +8,7 @@ Usage
 This script:
   1. Loads Pal 5 parameters from the bundled GC catalogue.
   2. Builds the MWPotential2014 host potential.
-  3. Uses create_stream (Fardal+15 particle-spray method) to simulate
+  3. Uses create_mock_stream_fardal15 (Fardal+15 particle-spray method) to simulate
      3 orbits of tidal disruption.
   4. Prints the resulting 6-D phase-space coordinates of the stream
      particles.
@@ -21,7 +21,7 @@ import agama
 
 from streamcutter.dynamics import GCParams
 from streamcutter.stream_generator import (
-    create_stream,
+    create_mock_stream_fardal15,
     create_initial_condition_fardal15,
 )
 
@@ -89,12 +89,12 @@ def main():
     rng           = np.random.default_rng(seed=42)
 
     print(
-        f"\nRunning create_stream for {n_orbits} orbits "
+        f"\nRunning create_mock_stream_fardal15 for {n_orbits} orbits "
         f"(time_total = {time_total:.3f} Agama TU, "
         f"{num_particles} particles) ..."
     )
 
-    time_sat, orbit_sat, xv_stream, ic_stream = create_stream(
+    time_sat, orbit_sat, xv_stream, ic_stream = create_mock_stream_fardal15(
         create_initial_condition_fardal15,
         rng,
         time_total,

@@ -98,7 +98,7 @@ def create_initial_condition_fardal15(rng, pot_host, orb_sat, mass_sat, gala_mod
         np.column_stack([rx*0, rvy, rvz]), np.repeat(R, 2, axis=0))
     return ic_stream
 
-def create_stream(create_ic_method, rng, time_total, num_particles, pot_host, posvel_sat, mass_sat, pot_sat=None, **kwargs):
+def create_mock_stream_fardal15(create_ic_method, rng, time_total, num_particles, pot_host, posvel_sat, mass_sat, pot_sat=None, **kwargs):
     """
     Generate a tidal stream by simulating the orbital trajectory of a progenitor and creating particles released at its Lagrange points.
 

@@ -24,7 +24,7 @@ sys.modules.pop("streamcutter.stream_generator", None)
 _pyfalcon_stub = types.ModuleType("pyfalcon")
 sys.modules.setdefault("pyfalcon", _pyfalcon_stub)
 
-from streamcutter.stream_generator import create_stream  # noqa: E402
+from streamcutter.stream_generator import create_mock_stream_fardal15  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def _make_stream_orbit_return(n_ics=_N_ICS):
 # ---------------------------------------------------------------------------
 
 class TestCreateStream:
-    """Tests for create_stream using monkey-patched agama.orbit / agama.Potential."""
+    """Tests for create_mock_stream_fardal15 using monkey-patched agama.orbit / agama.Potential."""
 
     def setup_method(self, _method):
         _agama_stub.orbit.reset_mock()
@@ -92,7 +92,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, _, _, _ = create_stream(
+        time_sat, _, _, _ = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -103,7 +103,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, _, _, _ = create_stream(
+        time_sat, _, _, _ = create_mock_stream_fardal15(
             create_ic_method, rng, -1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -119,7 +119,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -132,7 +132,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -145,7 +145,7 @@ class TestCreateStream:
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
         time_total = 2.5
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, time_total, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -161,7 +161,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -172,7 +172,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -185,7 +185,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -197,7 +197,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             gala_modified=True
         )
@@ -214,7 +214,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             pot_sat=None
         )
@@ -227,7 +227,7 @@ class TestCreateStream:
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
         pot_sat = MagicMock()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             pot_sat=pot_sat
         )
@@ -241,11 +241,11 @@ class TestCreateStream:
     # ------------------------------------------------------------------
 
     def test_return_value_shapes(self):
-        """create_stream returns arrays of the expected shapes."""
+        """create_mock_stream_fardal15 returns arrays of the expected shapes."""
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, orbit_sat, xv_stream, ic_stream = create_stream(
+        time_sat, orbit_sat, xv_stream, ic_stream = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -261,7 +261,7 @@ class TestCreateStream:
         expected_ic = np.ones((_N_ICS, 6)) * 42.0
         create_ic_method.return_value = expected_ic
 
-        _, _, _, ic_stream = create_stream(
+        _, _, _, ic_stream = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
