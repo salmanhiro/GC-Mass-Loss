@@ -322,7 +322,11 @@ class TestIntegrateOrbit:
 
 
 class TestCreateMockStreamNbody:
-    """Tests for create_mock_stream_nbody (partial — orbit only for now)."""
+    """Tests for create_mock_stream_nbody."""
+
+    _N = 4   # small even number for num_particles
+    _KING_W0 = 3.0
+    _SIGMA = 20.0
 
     def _make_orbit_rv(self, n=10):
         times = np.linspace(0.0, -1.0, n)
@@ -333,33 +337,65 @@ class TestCreateMockStreamNbody:
         _agama_stub.orbit.reset_mock()
         _agama_stub.orbit.side_effect = None
         _agama_stub.orbit.return_value = self._make_orbit_rv()
+        _pyfalcon_stub.gravity = MagicMock(
+            return_value=(np.zeros((self._N, 3)), np.zeros(self._N))
+        )
 
-    def test_returns_tuple_of_two(self):
+    def _make_nbody_mocks(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host):
+        mock_dynfric.return_value = np.zeros(3)
+        mock_krt.return_value = 3.0
+        mock_tr.return_value = 0.5
+        mock_make_ics.return_value = (
+            np.zeros((self._N, 6)),   # f_xv_ic
+            np.ones(self._N) * 1.0,  # mass
+            float(self._N),           # initmass
+            1.0, 0.5, 0.1,           # r_out, r_tidal_a, r0
+        )
+        pot_host.force.return_value = np.zeros((self._N, 3))
+
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_returns_tuple_of_four(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
         self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
         rng = np.random.default_rng(0)
         result = create_mock_stream_nbody(
-            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
         )
-        assert len(result) == 2
+        assert len(result) == 4
 
-    def test_orbit_arrays_have_correct_ndim(self):
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_orbit_arrays_have_correct_ndim(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
         self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
         rng = np.random.default_rng(0)
-        times, orbit = create_mock_stream_nbody(
-            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+        times, orbit, *_ = create_mock_stream_nbody(
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
         )
-        assert times.ndim  == 1
-        assert orbit.ndim  == 2
+        assert times.ndim == 1
+        assert orbit.ndim == 2
         assert orbit.shape[1] == 6
 
-    def test_uses_integrate_orbit_internally(self):
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_uses_integrate_orbit_internally(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
         """create_mock_stream_nbody must delegate to agama.orbit for integration."""
         self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
         rng = np.random.default_rng(0)
         create_mock_stream_nbody(
-            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
         )
-        # agama.orbit is called inside integrate_orbit
         _agama_stub.orbit.assert_called()
 
 
