@@ -269,6 +269,101 @@ class TestCreateStream:
 
 
 # ---------------------------------------------------------------------------
+# integrate_orbit and create_mock_stream_nbody tests
+# ---------------------------------------------------------------------------
+
+from streamcutter.stream_generator import (  # noqa: E402
+    integrate_orbit,
+    create_mock_stream_nbody,
+)
+
+_N_ORBIT_STEPS = 8
+
+
+class TestIntegrateOrbit:
+    """Tests for integrate_orbit."""
+
+    def _make_orbit_rv(self, n=_N_ORBIT_STEPS):
+        times = np.linspace(0.0, -1.0, n)
+        traj  = np.ones((n, 6)) * 0.5
+        return times, traj
+
+    def _setup(self, n=_N_ORBIT_STEPS):
+        _agama_stub.orbit.reset_mock()
+        _agama_stub.orbit.side_effect = None
+        _agama_stub.orbit.return_value = self._make_orbit_rv(n)
+
+    def test_returns_tuple_of_two(self):
+        self._setup()
+        pot   = MagicMock()
+        times, traj = integrate_orbit(pot, np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        assert times.shape == (_N_ORBIT_STEPS,)
+        assert traj.shape  == (_N_ORBIT_STEPS, 6)
+
+    def test_calls_agama_orbit_once(self):
+        self._setup()
+        integrate_orbit(MagicMock(), np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        _agama_stub.orbit.assert_called_once()
+
+    def test_passes_potential_and_ic(self):
+        self._setup()
+        pot    = MagicMock()
+        posvel = np.array([1.0, 2.0, 3.0, 0.1, 0.2, 0.3])
+        integrate_orbit(pot, posvel, -1.0, _N_ORBIT_STEPS)
+        call_kwargs = _agama_stub.orbit.call_args[1]
+        assert call_kwargs["potential"] is pot
+        np.testing.assert_array_equal(call_kwargs["ic"], posvel)
+
+    def test_trajsize_matches_num_steps(self):
+        self._setup()
+        integrate_orbit(MagicMock(), np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        call_kwargs = _agama_stub.orbit.call_args[1]
+        assert call_kwargs["trajsize"] == _N_ORBIT_STEPS
+
+
+class TestCreateMockStreamNbody:
+    """Tests for create_mock_stream_nbody (partial — orbit only for now)."""
+
+    def _make_orbit_rv(self, n=10):
+        times = np.linspace(0.0, -1.0, n)
+        traj  = np.ones((n, 6)) * 0.5
+        return times, traj
+
+    def _setup(self):
+        _agama_stub.orbit.reset_mock()
+        _agama_stub.orbit.side_effect = None
+        _agama_stub.orbit.return_value = self._make_orbit_rv()
+
+    def test_returns_tuple_of_two(self):
+        self._setup()
+        rng = np.random.default_rng(0)
+        result = create_mock_stream_nbody(
+            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+        )
+        assert len(result) == 2
+
+    def test_orbit_arrays_have_correct_ndim(self):
+        self._setup()
+        rng = np.random.default_rng(0)
+        times, orbit = create_mock_stream_nbody(
+            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+        )
+        assert times.ndim  == 1
+        assert orbit.ndim  == 2
+        assert orbit.shape[1] == 6
+
+    def test_uses_integrate_orbit_internally(self):
+        """create_mock_stream_nbody must delegate to agama.orbit for integration."""
+        self._setup()
+        rng = np.random.default_rng(0)
+        create_mock_stream_nbody(
+            rng, -1.0, 20, MagicMock(), MagicMock(), np.zeros(6), 1e4
+        )
+        # agama.orbit is called inside integrate_orbit
+        _agama_stub.orbit.assert_called()
+
+
+# ---------------------------------------------------------------------------
 # Coordinate transform tests (get_observed_coords / get_galactocentric_coords)
 # ---------------------------------------------------------------------------
 
@@ -281,6 +376,7 @@ from streamcutter.coordinate import (  # noqa: E402
 # A simple reference point near the Galactic Center that has a known
 # heliocentric direction and easy-to-check round-trip properties.
 _XV_GC = np.array([[8.0, 0.0, 0.0, 0.0, 220.0, 0.0]])   # one row, (N,6)
+
 
 
 class TestGetObservedCoords:

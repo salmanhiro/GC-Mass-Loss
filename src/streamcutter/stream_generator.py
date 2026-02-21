@@ -189,4 +189,5 @@ def create_mock_stream_nbody(rng, time_total, num_particles, pot_host, pot_sat, 
 
     # Integrate orbit backward to get initial conditions for N-body
     time_sat, orbit_sat = integrate_orbit(pot_host, posvel_sat, time_total, num_steps)
+    return time_sat, orbit_sat
 
