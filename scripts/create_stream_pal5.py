@@ -145,11 +145,11 @@ def main():
     ax.scatter(xv_stream[:, 0], xv_stream[:, 1],
                s=1, alpha=0.4, color="steelblue", label="stream")
     ax.scatter(posvel_sat[0], posvel_sat[1],
-               s=60, color="red", zorder=5, label="Pal 5")
+               s=80, color="red", marker="*", zorder=5, label="Pal 5")
     ax.set_xlabel("x [kpc]")
     ax.set_ylabel("y [kpc]")
     ax.set_title("Galactocentric x–y")
-    ax.legend(markerscale=4, fontsize=8)
+    ax.legend(fontsize=8, scatterpoints=1, handlelength=1)
     ax.set_aspect("equal")
 
     # --- Galactocentric x-z ---
