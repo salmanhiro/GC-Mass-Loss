@@ -16,6 +16,7 @@ This script:
 
 from pathlib import Path
 
+import astropy.units as u
 import matplotlib
 matplotlib.use("Agg")   # non-interactive backend for script use
 import matplotlib.pyplot as plt
@@ -51,26 +52,26 @@ def main():
 
     print(f"Cluster: {cluster_name}")
 
-    # 6-D phase-space coordinates (kpc and km/s)
+    # 6-D phase-space coordinates: extract numeric values in the correct units
     posvel_sat = np.array([
-        float(row["X_gc"][0]),
-        float(row["Y_gc"][0]),
-        float(row["Z_gc"][0]),
-        float(row["Vx_gc"][0]),
-        float(row["Vy_gc"][0]),
-        float(row["Vz_gc"][0]),
+        row["X_gc"][0].to_value(u.kpc),
+        row["Y_gc"][0].to_value(u.kpc),
+        row["Z_gc"][0].to_value(u.kpc),
+        row["Vx_gc"][0].to_value(u.km/u.s),
+        row["Vy_gc"][0].to_value(u.km/u.s),
+        row["Vz_gc"][0].to_value(u.km/u.s),
     ])
 
-    mass_sat = float(row["Mass"][0])           # [Msun]
-    rhm_kpc  = float(row["rh,m"][0]) * 1e-3   # half-mass radius [pc → kpc]
+    mass_sat = row["Mass"][0].to_value(u.solMass)          # [Msun]
+    rhm_kpc  = row["rh,m"][0].to_value(u.pc) * 1e-3       # half-mass radius [pc → kpc]
 
     # Orbital period in Agama time units
-    orbit_period_myr = float(row["orbit_period_max"][0])   # [Myr]
+    orbit_period_myr = row["orbit_period_max"][0].to_value(u.Myr)   # [Myr]
     orbit_period     = orbit_period_myr * 1e-3 / _GYR_PER_AGAMA_TU  # [Agama TU]
 
     print(f"  posvel       : {posvel_sat}")
     print(f"  mass         : {mass_sat:.3e} Msun")
-    print(f"  rh,m         : {float(row['rh,m'][0]):.2f} pc")
+    print(f"  rh,m         : {row['rh,m'][0].to_value(u.pc):.2f} pc")
     print(f"  orbit period : {orbit_period_myr:.1f} Myr  ({orbit_period:.3f} Agama TU)")
 
     # ------------------------------------------------------------------
