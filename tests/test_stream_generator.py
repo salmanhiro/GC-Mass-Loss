@@ -24,7 +24,7 @@ sys.modules.pop("streamcutter.stream_generator", None)
 _pyfalcon_stub = types.ModuleType("pyfalcon")
 sys.modules.setdefault("pyfalcon", _pyfalcon_stub)
 
-from streamcutter.stream_generator import create_stream  # noqa: E402
+from streamcutter.stream_generator import create_mock_stream_fardal15  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def _make_stream_orbit_return(n_ics=_N_ICS):
 # ---------------------------------------------------------------------------
 
 class TestCreateStream:
-    """Tests for create_stream using monkey-patched agama.orbit / agama.Potential."""
+    """Tests for create_mock_stream_fardal15 using monkey-patched agama.orbit / agama.Potential."""
 
     def setup_method(self, _method):
         _agama_stub.orbit.reset_mock()
@@ -92,7 +92,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, _, _, _ = create_stream(
+        time_sat, _, _, _ = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -103,7 +103,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, _, _, _ = create_stream(
+        time_sat, _, _, _ = create_mock_stream_fardal15(
             create_ic_method, rng, -1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -119,7 +119,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -132,7 +132,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -145,7 +145,7 @@ class TestCreateStream:
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
         time_total = 2.5
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, time_total, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -161,7 +161,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -172,7 +172,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -185,7 +185,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -197,7 +197,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             gala_modified=True
         )
@@ -214,7 +214,7 @@ class TestCreateStream:
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             pot_sat=None
         )
@@ -227,7 +227,7 @@ class TestCreateStream:
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
         pot_sat = MagicMock()
 
-        create_stream(
+        create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat,
             pot_sat=pot_sat
         )
@@ -241,11 +241,11 @@ class TestCreateStream:
     # ------------------------------------------------------------------
 
     def test_return_value_shapes(self):
-        """create_stream returns arrays of the expected shapes."""
+        """create_mock_stream_fardal15 returns arrays of the expected shapes."""
         self._setup_side_effects()
         rng, pot_host, posvel_sat, mass_sat, create_ic_method = self._default_args()
 
-        time_sat, orbit_sat, xv_stream, ic_stream = create_stream(
+        time_sat, orbit_sat, xv_stream, ic_stream = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
@@ -261,8 +261,244 @@ class TestCreateStream:
         expected_ic = np.ones((_N_ICS, 6)) * 42.0
         create_ic_method.return_value = expected_ic
 
-        _, _, _, ic_stream = create_stream(
+        _, _, _, ic_stream = create_mock_stream_fardal15(
             create_ic_method, rng, 1.0, _N_PARTICLES, pot_host, posvel_sat, mass_sat
         )
 
         assert np.array_equal(ic_stream, expected_ic)
+
+
+# ---------------------------------------------------------------------------
+# integrate_orbit and create_mock_stream_nbody tests
+# ---------------------------------------------------------------------------
+
+from streamcutter.stream_generator import (  # noqa: E402
+    integrate_orbit,
+    create_mock_stream_nbody,
+)
+
+_N_ORBIT_STEPS = 8
+
+
+class TestIntegrateOrbit:
+    """Tests for integrate_orbit."""
+
+    def _make_orbit_rv(self, n=_N_ORBIT_STEPS):
+        times = np.linspace(0.0, -1.0, n)
+        traj  = np.ones((n, 6)) * 0.5
+        return times, traj
+
+    def _setup(self, n=_N_ORBIT_STEPS):
+        _agama_stub.orbit.reset_mock()
+        _agama_stub.orbit.side_effect = None
+        _agama_stub.orbit.return_value = self._make_orbit_rv(n)
+
+    def test_returns_tuple_of_two(self):
+        self._setup()
+        pot   = MagicMock()
+        times, traj = integrate_orbit(pot, np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        assert times.shape == (_N_ORBIT_STEPS,)
+        assert traj.shape  == (_N_ORBIT_STEPS, 6)
+
+    def test_calls_agama_orbit_once(self):
+        self._setup()
+        integrate_orbit(MagicMock(), np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        _agama_stub.orbit.assert_called_once()
+
+    def test_passes_potential_and_ic(self):
+        self._setup()
+        pot    = MagicMock()
+        posvel = np.array([1.0, 2.0, 3.0, 0.1, 0.2, 0.3])
+        integrate_orbit(pot, posvel, -1.0, _N_ORBIT_STEPS)
+        call_kwargs = _agama_stub.orbit.call_args[1]
+        assert call_kwargs["potential"] is pot
+        np.testing.assert_array_equal(call_kwargs["ic"], posvel)
+
+    def test_trajsize_matches_num_steps(self):
+        self._setup()
+        integrate_orbit(MagicMock(), np.zeros(6), -1.0, _N_ORBIT_STEPS)
+        call_kwargs = _agama_stub.orbit.call_args[1]
+        assert call_kwargs["trajsize"] == _N_ORBIT_STEPS
+
+
+class TestCreateMockStreamNbody:
+    """Tests for create_mock_stream_nbody."""
+
+    _N = 4   # small even number for num_particles
+    _KING_W0 = 3.0
+    _SIGMA = 20.0
+
+    def _make_orbit_rv(self, n=10):
+        times = np.linspace(0.0, -1.0, n)
+        traj  = np.ones((n, 6)) * 0.5
+        return times, traj
+
+    def _setup(self):
+        _agama_stub.orbit.reset_mock()
+        _agama_stub.orbit.side_effect = None
+        _agama_stub.orbit.return_value = self._make_orbit_rv()
+        _pyfalcon_stub.gravity = MagicMock(
+            return_value=(np.zeros((self._N, 3)), np.zeros(self._N))
+        )
+
+    def _make_nbody_mocks(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host):
+        mock_dynfric.return_value = np.zeros(3)
+        mock_krt.return_value = 3.0
+        mock_tr.return_value = 0.5
+        mock_make_ics.return_value = (
+            np.zeros((self._N, 6)),   # f_xv_ic
+            np.ones(self._N) * 1.0,  # mass
+            float(self._N),           # initmass
+            1.0, 0.5, 0.1,           # r_out, r_tidal_a, r0
+        )
+        pot_host.force.return_value = np.zeros((self._N, 3))
+
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_returns_tuple_of_four(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
+        self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
+        rng = np.random.default_rng(0)
+        result = create_mock_stream_nbody(
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
+        )
+        assert len(result) == 4
+
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_orbit_arrays_have_correct_ndim(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
+        self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
+        rng = np.random.default_rng(0)
+        times, orbit, *_ = create_mock_stream_nbody(
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
+        )
+        assert times.ndim == 1
+        assert orbit.ndim == 2
+        assert orbit.shape[1] == 6
+
+    @patch("streamcutter.stream_generator.tidal_radius")
+    @patch("streamcutter.stream_generator.king_rt_over_scaleRadius")
+    @patch("streamcutter.stream_generator.make_satellite_ics")
+    @patch("streamcutter.stream_generator.dynfricAccel")
+    def test_uses_integrate_orbit_internally(self, mock_dynfric, mock_make_ics, mock_krt, mock_tr):
+        """create_mock_stream_nbody must delegate to agama.orbit for integration."""
+        self._setup()
+        pot_host = MagicMock()
+        self._make_nbody_mocks(mock_dynfric, mock_make_ics, mock_krt, mock_tr, pot_host)
+        rng = np.random.default_rng(0)
+        create_mock_stream_nbody(
+            rng, -1.0, self._N, pot_host, np.zeros(6), 1e4, self._KING_W0, self._SIGMA
+        )
+        _agama_stub.orbit.assert_called()
+
+
+# ---------------------------------------------------------------------------
+# Coordinate transform tests (get_observed_coords / get_galactocentric_coords)
+# ---------------------------------------------------------------------------
+
+# These functions depend only on astropy (installed in CI); no mocking needed.
+from streamcutter.coordinate import (  # noqa: E402
+    get_observed_coords,
+    get_galactocentric_coords,
+)
+
+# A simple reference point near the Galactic Center that has a known
+# heliocentric direction and easy-to-check round-trip properties.
+_XV_GC = np.array([[8.0, 0.0, 0.0, 0.0, 220.0, 0.0]])   # one row, (N,6)
+
+
+
+class TestGetObservedCoords:
+    """Tests for get_observed_coords."""
+
+    def test_returns_six_arrays(self):
+        result = get_observed_coords(_XV_GC)
+        assert len(result) == 6
+
+    def test_shapes_match_input(self):
+        n = 5
+        xv = np.tile(_XV_GC, (n, 1))
+        ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv)
+        for arr in (ra, dec, vlos, pmra, pmde, dist):
+            assert arr.shape == (n,)
+
+    def test_ra_in_range(self):
+        ra, *_ = get_observed_coords(_XV_GC)
+        assert np.all((ra >= 0) & (ra < 360))
+
+    def test_dec_in_range(self):
+        _, dec, *_ = get_observed_coords(_XV_GC)
+        assert np.all((dec >= -90) & (dec <= 90))
+
+    def test_distance_positive(self):
+        *_, dist = get_observed_coords(_XV_GC)
+        assert np.all(dist > 0)
+
+    def test_accepts_list_input(self):
+        """get_observed_coords should accept nested lists (not just ndarray)."""
+        xv_list = _XV_GC.tolist()
+        result = get_observed_coords(xv_list)
+        assert len(result) == 6
+
+
+class TestGetGalactocentricCoords:
+    """Tests for get_galactocentric_coords."""
+
+    def test_returns_array_shape(self):
+        ra       = np.array([266.4])
+        dec      = np.array([-28.9])
+        distance = np.array([8.5])
+        vlos     = np.array([0.0])
+        pmra     = np.array([0.0])
+        pmdec    = np.array([0.0])
+        xv = get_galactocentric_coords(ra, dec, distance, vlos, pmra, pmdec)
+        assert xv.shape == (1, 6)
+
+    def test_returns_six_columns(self):
+        xv = get_galactocentric_coords(
+            np.array([0.0]), np.array([0.0]),
+            np.array([1.0]), np.array([0.0]),
+            np.array([0.0]), np.array([0.0]),
+        )
+        assert xv.shape[1] == 6
+
+
+class TestCoordRoundTrip:
+    """Round-trip: Galactocentric → observed → Galactocentric."""
+
+    _tol_pos = 1e-6   # kpc
+    _tol_vel = 1e-6   # km/s
+
+    def _roundtrip(self, xv_in):
+        ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv_in)
+        xv_out = get_galactocentric_coords(ra, dec, dist, vlos, pmra, pmde)
+        return xv_out
+
+    def test_single_particle_position(self):
+        xv_out = self._roundtrip(_XV_GC)
+        np.testing.assert_allclose(xv_out[:, :3], _XV_GC[:, :3], atol=self._tol_pos)
+
+    def test_single_particle_velocity(self):
+        xv_out = self._roundtrip(_XV_GC)
+        np.testing.assert_allclose(xv_out[:, 3:], _XV_GC[:, 3:], atol=self._tol_vel)
+
+    def test_multiple_particles(self):
+        rng = np.random.default_rng(0)
+        # Random positions within ~20 kpc, velocities within ±300 km/s
+        xv_in = np.column_stack([
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-300, 300, 10),
+            rng.uniform(-300, 300, 10),
+            rng.uniform(-300, 300, 10),
+        ])
+        xv_out = self._roundtrip(xv_in)
+        np.testing.assert_allclose(xv_out, xv_in, atol=self._tol_pos)
