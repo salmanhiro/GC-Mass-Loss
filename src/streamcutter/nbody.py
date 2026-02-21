@@ -6,6 +6,8 @@ import agama
 import pyfalcon
 import scipy
 
+from streamcutter.dynamics import PotentialFactory
+
 agama.setUnits(length=1, velocity=1, mass=1)  # 1 kpc, 1 km/s, 1 Msun
 
 def dynfricAccel(pot_host, sigma, pos, vel, mass):
@@ -68,7 +70,70 @@ def tidal_radius(pot_host, r, msat, dr_frac=1e-3):
     rtidal = (msat / (f * Menc)) ** (1.0 / 3.0) * r
     return rtidal
 
-def make_satellite_ics(ft, seed, M_SAT, Nbody, pot_host, r_center0, KING_W0, KING_TRUNC, RT_OVER_R0):
+def make_satellite_ics(
+    ft,
+    seed,
+    M_SAT,
+    Nbody,
+    pot_host,
+    r_center0,
+    KING_W0,
+    KING_TRUNC,
+    RT_OVER_R0,
+    satellite_type="king",
+):
+    """
+    Generate initial conditions for an N-body satellite cluster.
+
+    The satellite is placed at *r_center0* (Galactocentric Cartesian, shape
+    ``(6,)``), sampled from a quasi-spherical DF drawn from either a King or a
+    Plummer potential.  The satellite's tidal radius at that position sets the
+    overall scale.
+
+    Parameters
+    ----------
+    ft : float
+        Fraction of the tidal radius used as the King truncation radius.
+    seed : int
+        Random seed for reproducibility.
+    M_SAT : float
+        Total satellite mass [Msun].
+    Nbody : int
+        Number of N-body particles to sample.
+    pot_host : agama.Potential
+        Host galaxy potential.
+    r_center0 : array-like of shape (6,)
+        Initial 6-D Galactocentric phase-space centre of the satellite
+        [kpc, km/s].
+    KING_W0 : float
+        King dimensionless central potential parameter *W0*.
+    KING_TRUNC : float
+        King truncation parameter (passed as ``trunc``).
+    RT_OVER_R0 : float
+        Ratio of tidal (truncation) radius to King scale radius, used to
+        derive the King scale radius from ``r_out``.
+    satellite_type : {"king", "plummer"}
+        Which satellite potential model to use.  ``"king"`` (default) creates
+        a King sphere via ``agama.Potential(type='King', ...)`` with the full
+        ``scaleRadius`` and ``trunc`` parameters;
+        ``"plummer"`` creates a Plummer sphere via
+        :meth:`~streamcutter.dynamics.PotentialFactory.satellite_plummer`.
+
+    Returns
+    -------
+    f_xv : ndarray of shape (Nbody, 6)
+        Galactocentric phase-space coordinates of the sampled particles.
+    mass : ndarray of shape (Nbody,)
+        Individual particle masses [Msun].
+    initmass : float
+        Total mass of the satellite potential [Msun].
+    r_out : float
+        Truncation (tidal) radius used [kpc].
+    r_tidal_a : float
+        Instantaneous tidal radius at the given Galactocentric radius [kpc].
+    r0 : float
+        King / Plummer scale radius [kpc].
+    """
     np.random.seed(int(seed))
     M = float(M_SAT)
     ft = float(ft)
@@ -76,15 +141,24 @@ def make_satellite_ics(ft, seed, M_SAT, Nbody, pot_host, r_center0, KING_W0, KIN
     ra = float(np.linalg.norm(r_center0[0:3]))
     r_tidal_a = tidal_radius(pot_host, ra, M)
     r_out = ft * r_tidal_a
-    r0 = r_out / RT_OVER_R0  # King scaleRadius
+    r0 = r_out / RT_OVER_R0  # scale radius
 
-    pot_sat = agama.Potential(
-        type="King",
-        mass=M,
-        scaleRadius=float(r0),
-        W0=float(KING_W0),
-        trunc=float(KING_TRUNC),
-    )
+    satellite_type = satellite_type.lower()
+    if satellite_type == "king":
+        # King needs scaleRadius and trunc which PotentialFactory.satellite_king
+        # doesn't expose; build the full potential directly via agama.
+        pot_sat = agama.Potential(
+            type="King",
+            mass=M,
+            scaleRadius=float(r0),
+            W0=float(KING_W0),
+            trunc=float(KING_TRUNC),
+        )
+    elif satellite_type == "plummer":
+        pot_sat = PotentialFactory.satellite_plummer(mass=M, rhm=float(r0))
+    else:
+        raise ValueError(f"Unknown satellite_type '{satellite_type}'. Choose 'king' or 'plummer'.")
+
     initmass = float(pot_sat.totalMass())
 
     df_sat = agama.DistributionFunction(type="quasispherical", potential=pot_sat)
@@ -93,6 +167,6 @@ def make_satellite_ics(ft, seed, M_SAT, Nbody, pot_host, r_center0, KING_W0, KIN
     f_xv = np.array(f_xv, copy=True)
     mass = np.array(mass, copy=True)
 
-    # Shift to Galactocentric initial center
+    # Shift to Galactocentric initial centre
     f_xv += r_center0
     return f_xv, mass, initmass, float(r_out), float(r_tidal_a), float(r0)
