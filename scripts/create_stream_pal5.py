@@ -23,6 +23,7 @@ from streamcutter.dynamics import GCParams
 from streamcutter.stream_generator import (
     create_mock_stream_fardal15,
     create_initial_condition_fardal15,
+    get_observed_coords,
 )
 
 # Agama unit system: 1 kpc, 1 km/s, 1 Msun
@@ -114,6 +115,19 @@ def main():
     print(f"{'x':>10} {'y':>10} {'z':>10} {'vx':>10} {'vy':>10} {'vz':>10}")
     for ps in xv_stream[:5]:
         print(" ".join(f"{v:>10.4f}" for v in ps))
+
+    # ------------------------------------------------------------------
+    # 6. Convert to observed (heliocentric) coordinates
+    # ------------------------------------------------------------------
+    ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv_stream)
+    print("\nObserved coords of first 5 stream particles:")
+    print(f"{'RA (deg)':>10} {'Dec (deg)':>10} {'dist (kpc)':>11} "
+          f"{'vlos (km/s)':>12} {'pmRA (mas/yr)':>14} {'pmDec (mas/yr)':>15}")
+    for i in range(min(5, len(ra))):
+        print(
+            f"{ra[i]:>10.4f} {dec[i]:>10.4f} {dist[i]:>11.4f} "
+            f"{vlos[i]:>12.4f} {pmra[i]:>14.4f} {pmde[i]:>15.4f}"
+        )
 
 
 if __name__ == "__main__":

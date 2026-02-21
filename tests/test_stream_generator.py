@@ -266,3 +266,107 @@ class TestCreateStream:
         )
 
         assert np.array_equal(ic_stream, expected_ic)
+
+
+# ---------------------------------------------------------------------------
+# Coordinate transform tests (get_observed_coords / get_galactocentric_coords)
+# ---------------------------------------------------------------------------
+
+# These functions depend only on astropy (installed in CI); no mocking needed.
+from streamcutter.stream_generator import (  # noqa: E402
+    get_observed_coords,
+    get_galactocentric_coords,
+)
+
+# A simple reference point near the Galactic Center that has a known
+# heliocentric direction and easy-to-check round-trip properties.
+_XV_GC = np.array([[8.0, 0.0, 0.0, 0.0, 220.0, 0.0]])   # one row, (N,6)
+
+
+class TestGetObservedCoords:
+    """Tests for get_observed_coords."""
+
+    def test_returns_six_arrays(self):
+        result = get_observed_coords(_XV_GC)
+        assert len(result) == 6
+
+    def test_shapes_match_input(self):
+        n = 5
+        xv = np.tile(_XV_GC, (n, 1))
+        ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv)
+        for arr in (ra, dec, vlos, pmra, pmde, dist):
+            assert arr.shape == (n,)
+
+    def test_ra_in_range(self):
+        ra, *_ = get_observed_coords(_XV_GC)
+        assert np.all((ra >= 0) & (ra < 360))
+
+    def test_dec_in_range(self):
+        _, dec, *_ = get_observed_coords(_XV_GC)
+        assert np.all((dec >= -90) & (dec <= 90))
+
+    def test_distance_positive(self):
+        *_, dist = get_observed_coords(_XV_GC)
+        assert np.all(dist > 0)
+
+    def test_accepts_list_input(self):
+        """get_observed_coords should accept nested lists (not just ndarray)."""
+        xv_list = _XV_GC.tolist()
+        result = get_observed_coords(xv_list)
+        assert len(result) == 6
+
+
+class TestGetGalactocentricCoords:
+    """Tests for get_galactocentric_coords."""
+
+    def test_returns_array_shape(self):
+        ra       = np.array([266.4])
+        dec      = np.array([-28.9])
+        distance = np.array([8.5])
+        vlos     = np.array([0.0])
+        pmra     = np.array([0.0])
+        pmdec    = np.array([0.0])
+        xv = get_galactocentric_coords(ra, dec, distance, vlos, pmra, pmdec)
+        assert xv.shape == (1, 6)
+
+    def test_returns_six_columns(self):
+        xv = get_galactocentric_coords(
+            np.array([0.0]), np.array([0.0]),
+            np.array([1.0]), np.array([0.0]),
+            np.array([0.0]), np.array([0.0]),
+        )
+        assert xv.shape[1] == 6
+
+
+class TestCoordRoundTrip:
+    """Round-trip: Galactocentric → observed → Galactocentric."""
+
+    _tol_pos = 1e-6   # kpc
+    _tol_vel = 1e-6   # km/s
+
+    def _roundtrip(self, xv_in):
+        ra, dec, vlos, pmra, pmde, dist = get_observed_coords(xv_in)
+        xv_out = get_galactocentric_coords(ra, dec, dist, vlos, pmra, pmde)
+        return xv_out
+
+    def test_single_particle_position(self):
+        xv_out = self._roundtrip(_XV_GC)
+        np.testing.assert_allclose(xv_out[:, :3], _XV_GC[:, :3], atol=self._tol_pos)
+
+    def test_single_particle_velocity(self):
+        xv_out = self._roundtrip(_XV_GC)
+        np.testing.assert_allclose(xv_out[:, 3:], _XV_GC[:, 3:], atol=self._tol_vel)
+
+    def test_multiple_particles(self):
+        rng = np.random.default_rng(0)
+        # Random positions within ~20 kpc, velocities within ±300 km/s
+        xv_in = np.column_stack([
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-20, 20, 10),
+            rng.uniform(-300, 300, 10),
+            rng.uniform(-300, 300, 10),
+            rng.uniform(-300, 300, 10),
+        ])
+        xv_out = self._roundtrip(xv_in)
+        np.testing.assert_allclose(xv_out, xv_in, atol=self._tol_pos)
