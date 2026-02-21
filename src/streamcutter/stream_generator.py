@@ -183,9 +183,10 @@ def create_mock_stream_nbody(rng, time_total, num_particles, pot_host, pot_sat, 
     ic_stream : 2D array of shape (num_particles, 6) containing the initial conditions of the particles released from the progenitor at the Lagrange points.
     """
 
-    tupd = time_total/50
+    forward_int_time = -time_total
+    tupd = forward_int_time/50
     tau = tupd/10
-    num_steps = int(abs(time_total) / tau)
+    num_steps = int(abs(forward_int_time) / tau)
 
     # Integrate orbit backward to get initial conditions for N-body
     time_sat, orbit_sat = integrate_orbit(pot_host, posvel_sat, time_total, num_steps)
