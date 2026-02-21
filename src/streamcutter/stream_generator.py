@@ -185,7 +185,7 @@ def create_mock_stream_nbody(rng, time_total, num_particles, pot_host, pot_sat, 
 
     tupd = time_total/50
     tau = tupd/10
-    num_steps = int(abs(time_total) / tau)
+    num_steps = int(abs(time_total) / abs(tau))
 
     # Integrate orbit backward to get initial conditions for N-body
     time_sat, orbit_sat = integrate_orbit(pot_host, posvel_sat, time_total, num_steps)
